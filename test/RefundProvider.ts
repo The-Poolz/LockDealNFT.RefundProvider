@@ -215,8 +215,7 @@ describe('Refund Provider', function () {
     it('should return currect pool data after split', async () => {
       const packedData = ethers.utils.defaultAbiCoder.encode(['uint256'], [ratio]);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
+        .connect(receiver)['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
       const params = [halfAmount, halfAmount.mul(rate).div(MAX_RATIO)];
       const poolData = await lockDealNFT.getData(poolId);
       expect(poolData).to.deep.equal([
@@ -233,8 +232,7 @@ describe('Refund Provider', function () {
     it('should return PoolSplit event after splitting', async () => {
       const packedData = ethers.utils.defaultAbiCoder.encode(['uint256', 'address'], [ratio, receiver.address]);
       const tx = await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
+        .connect(receiver)['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
       await tx.wait();
       const event = await lockDealNFT.queryFilter(lockDealNFT.filters.PoolSplit());
       const data = event[event.length - 1].args;
@@ -250,8 +248,7 @@ describe('Refund Provider', function () {
     it('should return new pool data after split', async () => {
       const packedData = ethers.utils.defaultAbiCoder.encode(['uint256'], [ratio]);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
+        .connect(receiver)['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
       const params = [halfAmount, halfAmount.mul(rate).div(MAX_RATIO)];
       const poolData = await lockDealNFT.getData(poolId + 6);
       expect(poolData).to.deep.equal([
@@ -268,8 +265,7 @@ describe('Refund Provider', function () {
     it('should return old data for user after split', async () => {
       const packedData = ethers.utils.defaultAbiCoder.encode(['uint256', 'address'], [ratio, receiver.address]);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
+        .connect(receiver)['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
       const params = [amount.div(2), startTime, finishTime, amount.div(2)];
       const poolData = await lockDealNFT.getData(poolId + 1);
       expect(poolData).to.deep.equal([
@@ -286,8 +282,7 @@ describe('Refund Provider', function () {
     it('should return new data for user after split', async () => {
       const packedData = ethers.utils.defaultAbiCoder.encode(['uint256', 'address'], [ratio, receiver.address]);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
+        .connect(receiver)['safeTransferFrom(address,address,uint256,bytes)'](receiver.address, lockDealNFT.address, poolId, packedData);
       const params = [amount.div(2), startTime, finishTime, amount.div(2)];
       const poolData = await lockDealNFT.getData(poolId + 7);
       expect(poolData).to.deep.equal([
@@ -306,8 +301,7 @@ describe('Refund Provider', function () {
     it('should withdraw tokens from pool after time', async () => {
       await time.setNextBlockTimestamp(finishTime + 1);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
+        .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
       const poolData = await lockDealNFT.getData(poolId + 1);
       const params = [0, startTime, finishTime, amount];
       expect(poolData).to.deep.equal([
@@ -324,8 +318,7 @@ describe('Refund Provider', function () {
     it('should withdraw half tokens from pool after halfTime', async () => {
       await time.setNextBlockTimestamp(startTime + halfTime);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
+        .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
       const params = [amount.div(2), startTime, finishTime, amount];
       const poolData = await lockDealNFT.getData(poolId + 1);
       expect(poolData).to.deep.equal([
@@ -348,8 +341,7 @@ describe('Refund Provider', function () {
         .createNewRefundPool(addresses, params, tokenSignature, mainCoinsignature);
       vaultId = await mockVaultManager.Id();
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
+        .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
       const poolData = await lockDealNFT.getData(poolId + 1);
       expect(poolData).to.deep.equal([
         dealProvider.address,
@@ -365,8 +357,7 @@ describe('Refund Provider', function () {
     it('should increase token collector pool after halfTime', async () => {
       await time.setNextBlockTimestamp(startTime + halfTime);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
+        .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
       const params = [mainCoinAmount.div(2)];
       const poolData = await lockDealNFT.getData(poolId + 3);
       expect(poolData).to.deep.equal([
@@ -407,8 +398,7 @@ describe('Refund Provider', function () {
         .connect(projectOwner)
         .createNewRefundPool(addresses, params, tokenSignature, mainCoinsignature);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId);
+        .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId);
       const newMainCoinPoolId = (await lockDealNFT.totalSupply()).toNumber() - 1;
       const poolData = await lockDealNFT.getData(newMainCoinPoolId);
       expect(poolData).to.deep.equal([
@@ -428,8 +418,7 @@ describe('Refund Provider', function () {
         .connect(projectOwner)
         .createNewRefundPool(addresses, params, tokenSignature, mainCoinsignature);
       await lockDealNFT
-        .connect(receiver)
-        ['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId);
+        .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId);
       const poolData = await lockDealNFT.getData(poolId + 4);
       expect(poolData).to.deep.equal([
         dealProvider.address,
@@ -450,8 +439,7 @@ describe('Refund Provider', function () {
       await mine(1);
       await expect(
         lockDealNFT
-          .connect(receiver)
-          ['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId),
+          .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId),
       ).to.be.revertedWith('RefundProvider: Refund period has expired');
     });
   });
