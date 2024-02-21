@@ -42,7 +42,7 @@ abstract contract RefundState is ProviderModifiers, IBeforeTransfer, IERC165 {
         address from,
         address to,
         uint256 poolId
-    ) external virtual override {
+    ) external virtual override onlyNFT {
         if (to == address(lockDealNFT)) {
             lastPoolOwner[poolId] = from;
         }
