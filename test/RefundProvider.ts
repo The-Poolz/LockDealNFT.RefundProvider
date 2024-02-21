@@ -326,7 +326,7 @@ describe('Refund Provider', function () {
         timedName,
         poolId + 1,
         vaultId.sub(1),
-        refundProvider.address,
+        receiver.address,
         token,
         params,
       ]);
@@ -358,7 +358,7 @@ describe('Refund Provider', function () {
       await time.setNextBlockTimestamp(startTime + halfTime);
       await lockDealNFT
         .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
-      const params = [mainCoinAmount.div(2)];
+      const params = [mainCoinAmount];
       const poolData = await lockDealNFT.getData(poolId + 3);
       expect(poolData).to.deep.equal([
         dealProvider.address,
@@ -442,5 +442,5 @@ describe('Refund Provider', function () {
           .connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId),
       ).to.be.revertedWith('RefundProvider: Refund period has expired');
     });
-  });
+   });
 });

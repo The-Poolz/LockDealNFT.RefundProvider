@@ -132,13 +132,27 @@ contract RefundProvider is RefundState, IERC721Receiver, FirewallConsumer {
     }
 
     ///@dev user withdraws his tokens
-    function withdraw(uint256 poolId) external override firewallProtected onlyNFT returns (uint256 amountToBeWithdrawed, bool isFinal) {
+    function withdraw(uint256 poolId) external override firewallProtected onlyNFT returns (uint256 amountToBeWithdrawn, bool isFinal) {
         uint256 userDataPoolId = poolId + 1;
         IProvider provider = lockDealNFT.poolIdToProvider(userDataPoolId);
-        amountToBeWithdrawed = provider.getWithdrawableAmount(userDataPoolId);
-        if (!collateralProvider.isPoolFinished(poolIdToCollateralId[poolId])) {
-            collateralProvider.handleWithdraw(poolIdToCollateralId[poolId], amountToBeWithdrawed);
+        amountToBeWithdrawn = provider.getWithdrawableAmount(userDataPoolId);
+        if (amountToBeWithdrawn > 0) {
+            uint256 fullAmount = provider.getParams(userDataPoolId)[0];
+            if (!collateralProvider.isPoolFinished(poolIdToCollateralId[poolId])) {
+                collateralProvider.handleWithdraw(
+                    poolIdToCollateralId[poolId],
+                    fullAmount
+                );
+            }
+            if (fullAmount > amountToBeWithdrawn) {
+                lockDealNFT.safeTransferFrom(
+                    address(this),
+                    lastPoolOwner[poolId],
+                    userDataPoolId
+                );
+            }
+            ISimpleProvider(address(provider)).withdraw(userDataPoolId, amountToBeWithdrawn);
+            isFinal = true;
         }
-        isFinal = provider.getParams(userDataPoolId)[0] == amountToBeWithdrawed;
     }
 }

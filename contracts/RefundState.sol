@@ -4,13 +4,14 @@ pragma solidity ^0.8.0;
 import "@poolzfinance/collateral-provider/contracts/interfaces/FundsManager.sol";
 import "@poolzfinance/lockdeal-nft/contracts/SimpleProviders/Provider/ProviderModifiers.sol";
 import "@poolzfinance/poolz-helper-v2/contracts/CalcUtils.sol";
-import "@poolzfinance/poolz-helper-v2/contracts/interfaces/IInnerWithdraw.sol";
+import "@poolzfinance/poolz-helper-v2/contracts/interfaces/IBeforeTransfer.sol";
 
-abstract contract RefundState is ProviderModifiers, IInnerWithdraw, IERC165 {
+abstract contract RefundState is ProviderModifiers, IBeforeTransfer, IERC165 {
     using CalcUtils for uint256;
 
     FundsManager public collateralProvider;
     mapping(uint256 => uint256) public poolIdToCollateralId;
+    mapping(uint256 => address) public lastPoolOwner;
 
     ///@return params  params [0] = tokenLeftAmount; - user(poolId + 1) data
     ///                params [1] = user main coin amount;
@@ -37,15 +38,18 @@ abstract contract RefundState is ProviderModifiers, IInnerWithdraw, IERC165 {
         }
     }
 
-    function getInnerIdsArray(uint256 poolId) public view override returns (uint256[] memory ids) {
-        if (lockDealNFT.poolIdToProvider(poolId) == this) {
-            ids = new uint256[](1);
-            ids[0] = poolId + 1;
+    function beforeTransfer(
+        address from,
+        address to,
+        uint256 poolId
+    ) external virtual override {
+        if (to == address(lockDealNFT)) {
+            lastPoolOwner[poolId] = from;
         }
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC165).interfaceId || interfaceId == type(IInnerWithdraw).interfaceId;
+        return interfaceId == type(IERC165).interfaceId || interfaceId == type(IBeforeTransfer).interfaceId;
     }
 
     function getSubProvidersPoolIds(uint256 poolId) public view virtual override returns (uint256[] memory poolIds) {
