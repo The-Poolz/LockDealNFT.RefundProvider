@@ -389,6 +389,22 @@ describe('Refund Provider', function () {
       const withdrawAmount = await lockDealNFT.getWithdrawableAmount(poolId);
       expect(withdrawAmount).to.equal(amount.div(2));
     });
+
+
+   it('should revert refund after withdrawing half amount', async () => {
+    await time.setNextBlockTimestamp(startTime + halfTime);
+    await lockDealNFT.connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
+    await expect(
+      lockDealNFT.connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId),
+    ).to.be.revertedWith('ERC721: caller is not token owner or approved');
+   });
+  });
+
+  it('should receive simple provider after withdraw', async () => {
+    await time.setNextBlockTimestamp(startTime + halfTime);
+    await lockDealNFT.connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
+    const data = await lockDealNFT.getData(poolId + 1);
+    expect(data.owner).to.deep.equal(receiver.address)
   });
 
   describe('Refund Pool', async () => {
