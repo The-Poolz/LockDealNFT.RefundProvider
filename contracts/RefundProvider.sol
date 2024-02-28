@@ -2,12 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@ironblocks/firewall-consumer/contracts/FirewallConsumer.sol";
 import "@poolzfinance/lockdeal-nft/contracts/ERC165/Refundble.sol";
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ISimpleProvider.sol";
 import "./RefundState.sol";
 
-contract RefundProvider is RefundState, IERC721Receiver, FirewallConsumer {
+contract RefundProvider is RefundState, IERC721Receiver {
     constructor(ILockDealNFT nftContract, address provider) {
         require(address(nftContract) != address(0x0) && provider != address(0x0), "RefundProvider: invalid address");
         lockDealNFT = nftContract;
@@ -136,23 +135,28 @@ contract RefundProvider is RefundState, IERC721Receiver, FirewallConsumer {
         uint256 userDataPoolId = poolId + 1;
         IProvider provider = lockDealNFT.poolIdToProvider(userDataPoolId);
         amountToBeWithdrawn = provider.getWithdrawableAmount(userDataPoolId);
-        if (amountToBeWithdrawn > 0) {
-            uint256 fullAmount = provider.getParams(userDataPoolId)[0];
-            if (!collateralProvider.isPoolFinished(poolIdToCollateralId[poolId])) {
-                collateralProvider.handleWithdraw(
-                    poolIdToCollateralId[poolId],
-                    fullAmount
-                );
-            }
-            if (fullAmount > amountToBeWithdrawn) {
-                lockDealNFT.safeTransferFrom(
-                    address(this),
-                    lastPoolOwner[poolId],
-                    userDataPoolId
-                );
-            }
-            ISimpleProvider(address(provider)).withdraw(userDataPoolId, amountToBeWithdrawn);
-            isFinal = true;
+        if (amountToBeWithdrawn == 0) {
+            return (0, false);
+        }
+        uint256 fullAmount = provider.getParams(userDataPoolId)[0];
+        _handleCollateralWithdraw(poolId, fullAmount);
+        _transferDataNFT(poolId, userDataPoolId, fullAmount, amountToBeWithdrawn);
+        ISimpleProvider(address(provider)).withdraw(userDataPoolId, amountToBeWithdrawn);
+        // refund pool remains in LockDealNFT
+        isFinal = true;
+    }
+
+    ///@dev collateral receives user full refund amount if the time has not expired
+    function _handleCollateralWithdraw(uint256 poolId, uint256 fullAmount) internal {
+        if (!collateralProvider.isPoolFinished(poolIdToCollateralId[poolId])) {
+            collateralProvider.handleWithdraw(poolIdToCollateralId[poolId], fullAmount);
+        }
+    }
+
+    ///@dev transfer data NFT (poolId + 1) to the pool owner
+    function _transferDataNFT(uint256 poolId, uint256 userDataPoolId, uint256 fullAmount, uint256 amountToBeWithdrawn) internal {
+        if (fullAmount > amountToBeWithdrawn) {
+            lockDealNFT.safeTransferFrom(address(this), lastPoolOwner[poolId], userDataPoolId);
         }
     }
 }

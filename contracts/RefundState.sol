@@ -3,10 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@poolzfinance/collateral-provider/contracts/interfaces/FundsManager.sol";
 import "@poolzfinance/lockdeal-nft/contracts/SimpleProviders/Provider/ProviderModifiers.sol";
+import "@ironblocks/firewall-consumer/contracts/FirewallConsumer.sol";
 import "@poolzfinance/poolz-helper-v2/contracts/CalcUtils.sol";
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/IBeforeTransfer.sol";
 
-abstract contract RefundState is ProviderModifiers, IBeforeTransfer, IERC165 {
+abstract contract RefundState is ProviderModifiers, IBeforeTransfer, IERC165, FirewallConsumer {
     using CalcUtils for uint256;
 
     FundsManager public collateralProvider;
@@ -42,7 +43,7 @@ abstract contract RefundState is ProviderModifiers, IBeforeTransfer, IERC165 {
         address from,
         address to,
         uint256 poolId
-    ) external virtual override onlyNFT {
+    ) external virtual override firewallProtected onlyNFT {
         if (to == address(lockDealNFT)) {
             lastPoolOwner[poolId] = from;
         }
