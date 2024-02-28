@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@poolzfinance/lockdeal-nft/contracts/ERC165/Refundble.sol";
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ISimpleProvider.sol";
-import "./RefundState.sol";
+import "./RefundInternal.sol";
 
-contract RefundProvider is RefundState, IERC721Receiver {
+contract RefundProvider is RefundInternal, IERC721Receiver {
     constructor(ILockDealNFT nftContract, address provider) {
         require(address(nftContract) != address(0x0) && provider != address(0x0), "RefundProvider: invalid address");
         lockDealNFT = nftContract;
@@ -109,18 +109,6 @@ contract RefundProvider is RefundState, IERC721Receiver {
         lockDealNFT.cloneVaultId(poolId, poolId + 1);
     }
 
-    function _registerPool(
-        uint256 poolId,
-        uint256[] memory params
-    )
-        internal
-        firewallProtectedSig(0xa635fdec)
-        validParamsLength(params.length, currentParamsTargetLength())
-    {
-        poolIdToCollateralId[poolId] = params[0];
-        emit UpdateParams(poolId, params);
-    }
-
     ///@dev split tokens and main coins into new pools
     function split(uint256 poolId, uint256 newPoolId, uint256 ratio) external firewallProtected onlyNFT {
         uint256[] memory params = new uint256[](currentParamsTargetLength());
@@ -142,20 +130,6 @@ contract RefundProvider is RefundState, IERC721Receiver {
             ISimpleProvider(address(provider)).withdraw(userDataPoolId, amountToBeWithdrawn);
             // refund pool remains in LockDealNFT
             isFinal = true;
-        }
-    }
-
-    ///@dev collateral receives user refund amount if the time has not expired
-    function _handleCollateralWithdraw(uint256 poolId, uint256 amount) internal firewallProtectedSig(0xf6071d4c) {
-        if (!collateralProvider.isPoolFinished(poolIdToCollateralId[poolId])) {
-            collateralProvider.handleWithdraw(poolIdToCollateralId[poolId], amount);
-        }
-    }
-
-    ///@dev transfer data NFT (poolId + 1) to the pool owner
-    function _transferDataNFT(uint256 poolId, uint256 userDataPoolId, uint256 amount, uint256 amountToBeWithdrawn) internal firewallProtectedSig(0x3ef1dad7) {
-        if (amount > amountToBeWithdrawn) {
-            lockDealNFT.safeTransferFrom(address(this), lastPoolOwner[poolId], userDataPoolId);
         }
     }
 }
