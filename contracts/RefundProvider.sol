@@ -135,15 +135,14 @@ contract RefundProvider is RefundState, IERC721Receiver {
         uint256 userDataPoolId = poolId + 1;
         IProvider provider = lockDealNFT.poolIdToProvider(userDataPoolId);
         amountToBeWithdrawn = provider.getWithdrawableAmount(userDataPoolId);
-        if (amountToBeWithdrawn == 0) {
-            return (0, false);
+        if (amountToBeWithdrawn > 0) {
+            uint256 fullAmount = provider.getParams(userDataPoolId)[0];
+            _handleCollateralWithdraw(poolId, fullAmount);
+            _transferDataNFT(poolId, userDataPoolId, fullAmount, amountToBeWithdrawn);
+            ISimpleProvider(address(provider)).withdraw(userDataPoolId, amountToBeWithdrawn);
+            // refund pool remains in LockDealNFT
+            isFinal = true;
         }
-        uint256 fullAmount = provider.getParams(userDataPoolId)[0];
-        _handleCollateralWithdraw(poolId, fullAmount);
-        _transferDataNFT(poolId, userDataPoolId, fullAmount, amountToBeWithdrawn);
-        ISimpleProvider(address(provider)).withdraw(userDataPoolId, amountToBeWithdrawn);
-        // refund pool remains in LockDealNFT
-        isFinal = true;
     }
 
     ///@dev collateral receives user full refund amount if the time has not expired
