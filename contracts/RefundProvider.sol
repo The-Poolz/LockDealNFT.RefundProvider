@@ -145,10 +145,10 @@ contract RefundProvider is RefundState, IERC721Receiver {
         }
     }
 
-    ///@dev collateral receives user full refund amount if the time has not expired
-    function _handleCollateralWithdraw(uint256 poolId, uint256 fullAmount) internal {
+    ///@dev collateral receives user refund amount if the time has not expired
+    function _handleCollateralWithdraw(uint256 poolId, uint256 amount) internal {
         if (!collateralProvider.isPoolFinished(poolIdToCollateralId[poolId])) {
-            collateralProvider.handleWithdraw(poolIdToCollateralId[poolId], fullAmount);
+            collateralProvider.handleWithdraw(poolIdToCollateralId[poolId], amount);
         }
     }
 
