@@ -396,7 +396,7 @@ describe('Refund Provider', function () {
     await lockDealNFT.connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, lockDealNFT.address, poolId);
     await expect(
       lockDealNFT.connect(receiver)['safeTransferFrom(address,address,uint256)'](receiver.address, refundProvider.address, poolId),
-    ).to.be.revertedWith('ERC721: caller is not token owner or approved');
+    ).to.be.revertedWithCustomError(lockDealNFT, "ERC721InsufficientApproval");
    });
   });
 
