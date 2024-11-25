@@ -6,6 +6,9 @@
 
 **RefundProvider** introduces a comprehensive contract that implement the **[Risk Free](https://blog.poolz.finance/poolz-risk-free-ido-model/)** and **[Secured](https://blog.poolz.finance/introducing-the-poolz-secured-ido-model/)** models. The `RefundProvider` smart contract is designed to enable flexible interactions with providers of various parameter lengths. The contract is abstracted from the specific provider it works with and can seamlessly integrate with `DealProvider`, `LockProvider`, and `TimedProvider` to perform all its functionalities.
 
+### Audit report
+The audit report is available here: [Audit Report](https://docs.google.com/document/d/18XSwsKKbHpLCr4MQNZe8nZSWHnG6aExtb57R5uzQ3Us/edit?tab=t.0#heading=h.5uoc4mfz7mn4)
+
 ## User
 
 `User` interacting with the **RefundProvider** contract have the following rights and capabilities:
